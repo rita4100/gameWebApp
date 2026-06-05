@@ -675,6 +675,11 @@ input:focus {
     border-color: var(--coral);
 }
 
+.loading-spinner {
+    color: var(--muted);
+    font-size: 1rem;
+}
+
 @media (max-width: 840px) {
     .nav-toggle {
         display: block;

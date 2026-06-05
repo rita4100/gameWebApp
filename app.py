@@ -126,8 +126,8 @@ def rawg_get(path, params=None):
         return None, "Game data could not be loaded right now. Please try again later."
 
 
-def fetch_games(search_query=None):
-    params = {"page_size": 18}
+def fetch_games(search_query=None, page=1):
+    params = {"page_size": 18, "page": page}
     if search_query:
         params.update({"search": search_query, "ordering": "-rating"})
     else:
@@ -169,7 +169,7 @@ def inject_status_labels():
 @app.route("/")
 def home():
     query = request.args.get("q", "").strip()
-    games, error = fetch_games(query)
+    games, error = fetch_games(query, page=1)
     page_title = "Search Results" if query else "Popular Games"
     return render_template(
         "index.html",
@@ -178,6 +178,21 @@ def home():
         error=error,
         page_title=page_title,
     )
+
+
+@app.route("/api/games/more", methods=["GET"])
+def load_more_games():
+    query = request.args.get("q", "").strip()
+    page = request.args.get("page", 1, type=int)
+    games, error = fetch_games(query, page=page)
+    
+    if error:
+        return jsonify({"ok": False, "error": error})
+    
+    return jsonify({
+        "ok": True,
+        "games": games,
+    })
 
 
 @app.route("/game/<int:id>")

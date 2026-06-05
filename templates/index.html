@@ -30,13 +30,72 @@
     {% if error %}
         <div class="empty-state">{{ error }}</div>
     {% elif games %}
-        <div class="game-grid">
+        <div class="game-grid" id="games-container">
             {% for game in games %}
                 {% include "partials/game_card.html" %}
             {% endfor %}
+        </div>
+        <div id="loading" class="loading-spinner" style="display: none; text-align: center; padding: 40px;">
+            <p>Loading more games...</p>
         </div>
     {% else %}
         <div class="empty-state">No games found.</div>
     {% endif %}
 </section>
+
+<script>
+let currentPage = 2;
+let isLoading = false;
+const query = "{{ query }}";
+
+function loadMoreGames() {
+    if (isLoading) return;
+    isLoading = true;
+    
+    const loadingEl = document.getElementById('loading');
+    loadingEl.style.display = 'block';
+    
+    fetch(`/api/games/more?q=${encodeURIComponent(query)}&page=${currentPage}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.ok && data.games.length > 0) {
+                const container = document.getElementById('games-container');
+                data.games.forEach(game => {
+                    const template = `
+                        <div class="game-card-wrapper">
+                            <a class="game-card" href="/game/${game.id}" aria-label="Open ${game.name}">
+                                <div class="card-image">
+                                    ${game.background_image ? `<img src="${game.background_image}" alt="${game.name} cover" loading="lazy">` : '<div class="cover-placeholder">No cover</div>'}
+                                    <span class="rating-badge">Rating ${game.rating || 'N/A'}</span>
+                                </div>
+                                <div class="card-body">
+                                    <h2>${game.name}</h2>
+                                    <p class="release">${game.released || 'Release date unknown'}</p>
+                                    <div class="tag-row">
+                                        ${game.genres && game.genres.slice(0, 3).length > 0 ? game.genres.slice(0, 3).map(g => `<span class="tag">${g.name}</span>`).join('') : '<span class="tag">Genres unknown</span>'}
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', template);
+                });
+                currentPage++;
+            }
+            loadingEl.style.display = 'none';
+            isLoading = false;
+        })
+        .catch(error => {
+            console.error('Error loading games:', error);
+            loadingEl.style.display = 'none';
+            isLoading = false;
+        });
+}
+
+window.addEventListener('scroll', () => {
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+        loadMoreGames();
+    }
+});
+</script>
 {% endblock %}
