@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} | GameVault{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="content-shell hero-inner">
+        <div class="hero-copy">
+            <p class="eyebrow">Track. Discover. Finish.</p>
+            <h1>{{ page_title }}</h1>
+            <p class="hero-text">
+                Explore popular games, search the RAWG catalog, and build a personal library across Playing, Wishlist, and Completed.
+            </p>
+        </div>
+
+        <form class="search-panel" action="{{ url_for('home') }}" method="get">
+            <label for="q">Search games</label>
+            <div class="search-row">
+                <input id="q" name="q" type="search" value="{{ query }}" placeholder="Search by title">
+                <button class="button button-primary" type="submit">Search</button>
+            </div>
+            {% if query %}
+                <a class="clear-search" href="{{ url_for('home') }}">Clear search</a>
+            {% endif %}
+        </form>
+    </div>
+</section>
+
+<section class="content-shell section">
+    {% if error %}
+        <div class="empty-state">{{ error }}</div>
+    {% elif games %}
+        <div class="game-grid">
+            {% for game in games %}
+                {% include "partials/game_card.html" %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">No games found.</div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,22 @@
+<a class="game-card" href="{{ url_for('game_detail', id=game.id) }}" aria-label="Open {{ game.name }}">
+    <div class="card-image">
+        {% if game.background_image %}
+            <img src="{{ game.background_image }}" alt="{{ game.name }} cover" loading="lazy">
+        {% else %}
+            <div class="cover-placeholder">No cover</div>
+        {% endif %}
+        <span class="rating-badge">Rating {{ game.rating or "N/A" }}</span>
+    </div>
+
+    <div class="card-body">
+        <h2>{{ game.name }}</h2>
+        <p class="release">{{ game.released or "Release date unknown" }}</p>
+        <div class="tag-row">
+            {% for genre in game.genres[:3] %}
+                <span class="tag">{{ genre.name }}</span>
+            {% else %}
+                <span class="tag">Genres unknown</span>
+            {% endfor %}
+        </div>
+    </div>
+</a>

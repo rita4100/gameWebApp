@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Library | GameVault{% endblock %}
+
+{% block content %}
+<section class="page-heading content-shell">
+    <p class="eyebrow">Personal library</p>
+    <h1>Your Games</h1>
+    <p>Everything here belongs only to your account.</p>
+</section>
+
+<section class="content-shell section">
+    {% if error %}
+        <div class="empty-state">{{ error }}</div>
+    {% endif %}
+
+    {% for status, label in STATUS_LABELS.items() %}
+        <section class="library-section">
+            <div class="section-title-row">
+                <h2>{{ label }}</h2>
+                <span>{{ library_games[status]|length }} games</span>
+            </div>
+
+            {% if library_games[status] %}
+                <div class="game-grid compact-grid">
+                    {% for game in library_games[status] %}
+                        {% include "partials/game_card.html" %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state small">No games in {{ label }} yet.</div>
+            {% endif %}
+        </section>
+    {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if game %}{{ game.name }} | GameVault{% else %}Game | GameVault{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if error %}
+    <section class="content-shell section">
+        <div class="empty-state">{{ error }}</div>
+    </section>
+{% elif game %}
+    <section class="detail-hero" {% if game.background_image %}style="background-image: linear-gradient(90deg, rgba(8, 10, 14, 0.95), rgba(8, 10, 14, 0.68)), url('{{ game.background_image }}');"{% endif %}>
+        <div class="content-shell detail-layout">
+            <div class="detail-cover">
+                {% if game.background_image %}
+                    <img src="{{ game.background_image }}" alt="{{ game.name }} cover">
+                {% else %}
+                    <div class="cover-placeholder large">No cover</div>
+                {% endif %}
+            </div>
+
+            <div class="detail-content">
+                <p class="eyebrow">Game details</p>
+                <h1>{{ game.name }}</h1>
+                <div class="meta-strip">
+                    <span>Rating {{ game.rating or "N/A" }}</span>
+                    <span>{{ game.released or "Release date unknown" }}</span>
+                </div>
+
+                <div class="tag-row">
+                    {% for genre in game.genres %}
+                        <span class="tag">{{ genre.name }}</span>
+                    {% else %}
+                        <span class="tag">Genres unknown</span>
+                    {% endfor %}
+                </div>
+
+                <div class="status-panel">
+                    {% if current_user.is_authenticated %}
+                        <p class="status-heading">Add to your library</p>
+                        <div class="status-actions" data-current-status="{{ current_status or '' }}">
+                            {% for status, label in STATUS_LABELS.items() %}
+                                <form class="status-form" action="{{ url_for('update_status', game_id=game.id, status=status) }}" method="post">
+                                    <input type="hidden" name="next" value="{{ url_for('game_detail', id=game.id) }}">
+                                    <button class="button status-button {% if current_status == status %}is-active{% endif %}" type="submit" data-status="{{ status }}">
+                                        {{ label }}
+                                    </button>
+                                </form>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="status-heading">Log in to track this game.</p>
+                        <a class="button button-primary" href="{{ url_for('login', next=request.path) }}">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content-shell detail-body">
+        <article>
+            <h2>Description</h2>
+            <p class="description">{{ game.description_raw or "No description is available for this game." }}</p>
+        </article>
+
+        <aside class="info-panel">
+            <h2>Platforms</h2>
+            <div class="platform-list">
+                {% for platform in game.platforms %}
+                    <span>{{ platform.platform.name }}</span>
+                {% else %}
+                    <span>Platforms unknown</span>
+                {% endfor %}
+            </div>
+        </aside>
+    </section>
+{% endif %}
+{% endblock %}
