@@ -24,6 +24,7 @@
             {% if library_games[status] %}
                 <div class="game-grid compact-grid">
                     {% for game in library_games[status] %}
+                        {% set in_library = True %}
                         {% include "partials/game_card.html" %}
                     {% endfor %}
                 </div>

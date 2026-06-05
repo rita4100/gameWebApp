@@ -4,7 +4,7 @@
 
 {% block content %}
 <section class="auth-wrap">
-    <form class="auth-card" method="post">
+    <form class="auth-card" method="post" id="registerForm">
         <p class="eyebrow">Start tracking</p>
         <h1>Register</h1>
 
@@ -17,8 +17,24 @@
         <label for="password">Password</label>
         <input id="password" name="password" type="password" autocomplete="new-password" minlength="6" required>
 
+        <label for="confirm_password">Confirm Password</label>
+        <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" minlength="6" required>
+
         <button class="button button-primary full-button" type="submit">Create account</button>
         <p class="form-note">Already have an account? <a href="{{ url_for('login') }}">Login</a>.</p>
     </form>
 </section>
+
+<script>
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    
+    if (password !== confirmPassword) {
+        e.preventDefault();
+        alert('Passwords do not match!');
+        return false;
+    }
+});
+</script>
 {% endblock %}

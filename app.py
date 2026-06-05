@@ -232,13 +232,18 @@ def register():
         username = request.form.get("username", "").strip()
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
+        confirm_password = request.form.get("confirm_password", "")
 
-        if not username or not email or not password:
+        if not username or not email or not password or not confirm_password:
             flash("All fields are required.", "error")
             return render_template("register.html")
 
         if len(password) < 6:
             flash("Password must be at least 6 characters long.", "error")
+            return render_template("register.html")
+
+        if password != confirm_password:
+            flash("Passwords do not match.", "error")
             return render_template("register.html")
 
         db = get_db()
@@ -338,6 +343,31 @@ def update_status(game_id, status):
     flash(message, "success")
     next_url = request.form.get("next") or request.args.get("next") or request.referrer
     return redirect(next_url if is_safe_next(next_url) else url_for("game_detail", id=game_id))
+
+
+@app.route("/remove_game/<int:id>", methods=["POST"])
+@login_required
+def remove_game(id):
+    db = get_db()
+    db.execute(
+        "DELETE FROM user_games WHERE user_id = ? AND game_id = ?",
+        (current_user.id, id),
+    )
+    db.commit()
+
+    message = "Game removed from your library."
+    wants_json = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    if wants_json:
+        return jsonify(
+            {
+                "ok": True,
+                "message": message,
+            }
+        )
+
+    flash(message, "success")
+    next_url = request.form.get("next") or request.args.get("next") or request.referrer
+    return redirect(next_url if is_safe_next(next_url) else url_for("library"))
 
 
 init_db()

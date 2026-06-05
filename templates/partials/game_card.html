@@ -1,4 +1,4 @@
-<a class="game-card" href="{{ url_for('game_detail', id=game.id) }}" aria-label="Open {{ game.name }}">
+{% if in_library %}<div class="game-card-wrapper">{% endif %}<a class="game-card" href="{{ url_for('game_detail', id=game.id) }}" aria-label="Open {{ game.name }}">
     <div class="card-image">
         {% if game.background_image %}
             <img src="{{ game.background_image }}" alt="{{ game.name }} cover" loading="lazy">
@@ -20,3 +20,12 @@
         </div>
     </div>
 </a>
+
+{% if in_library %}
+    <form class="remove-form" action="{{ url_for('remove_game', id=game.id) }}" method="post">
+        <button class="button button-danger remove-button" type="submit" title="Remove game from library">
+            Remove
+        </button>
+    </form>
+</div>
+{% endif %}
