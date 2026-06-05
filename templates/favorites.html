@@ -23,7 +23,7 @@
         {% if favorite_games %}
             <div class="game-grid compact-grid">
                 {% for game in favorite_games %}
-                    {% set in_library = False %}
+                    {% set in_library = True %}
                     {% include "partials/game_card.html" %}
                 {% endfor %}
             </div>
