@@ -19,8 +19,23 @@
                 <input id="q" name="q" type="search" value="{{ query }}" placeholder="Search by title">
                 <button class="button button-primary" type="submit">Search</button>
             </div>
-            {% if query %}
-                <a class="clear-search" href="{{ url_for('home') }}">Clear search</a>
+            {% if genres %}
+                <label for="genre">Filter by genre</label>
+                <div class="genre-filter-row">
+                    <select id="genre" name="genre" onchange="this.form.submit()">
+                        <option value="">All genres</option>
+                        {% for g in genres %}
+                            <option value="{{ g.id }}" {% if genre|string == g.id|string %}selected{% endif %}>{{ g.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+            {% if query or genre %}
+                <a class="clear-search" href="{{ url_for('home') }}">Clear filters</a>
+            {% else %}
+                {% if query %}
+                    <a class="clear-search" href="{{ url_for('home') }}">Clear search</a>
+                {% endif %}
             {% endif %}
         </form>
     </div>
@@ -47,6 +62,7 @@
 let currentPage = 2;
 let isLoading = false;
 const query = "{{ query }}";
+const genre = "{{ genre }}";
 
 function loadMoreGames() {
     if (isLoading) return;
@@ -55,7 +71,12 @@ function loadMoreGames() {
     const loadingEl = document.getElementById('loading');
     loadingEl.style.display = 'block';
     
-    fetch(`/api/games/more?q=${encodeURIComponent(query)}&page=${currentPage}`)
+    let url = `/api/games/more?q=${encodeURIComponent(query)}&page=${currentPage}`;
+    if (genre) {
+        url += `&genre=${encodeURIComponent(genre)}`;
+    }
+    
+    fetch(url)
         .then(response => response.json())
         .then(data => {
             if (data.ok && data.games.length > 0) {

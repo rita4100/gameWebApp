@@ -208,6 +208,35 @@ h1 {
     gap: 10px;
 }
 
+.genre-filter-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+select {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 14px;
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    outline: none;
+    background: rgba(255, 255, 255, 0.065);
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+    cursor: pointer;
+}
+
+select:hover,
+select:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 4px rgba(30, 230, 216, 0.14);
+}
+
+select option {
+    background: var(--surface-strong);
+    color: var(--text);
+}
+
 input {
     width: 100%;
     min-height: 48px;
@@ -452,6 +481,59 @@ input:focus {
     border-color: transparent;
     background: linear-gradient(135deg, var(--coral), var(--gold));
     font-weight: 900;
+}
+
+.favorite-panel {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+}
+
+.favorite-form {
+    margin: 0;
+}
+
+.heart-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: auto;
+    min-width: 190px;
+    height: 48px;
+    padding: 0 16px;
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 1rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.heart-icon {
+    color: var(--coral);
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.heart-label {
+    white-space: nowrap;
+}
+
+.heart-button:hover,
+.heart-button:focus-visible {
+    transform: scale(1.1);
+    border-color: rgba(255, 111, 97, 0.8);
+    box-shadow: 0 12px 28px rgba(255, 111, 97, 0.2);
+}
+
+.heart-button.is-favorited {
+    border-color: var(--coral);
+    background: rgba(255, 111, 97, 0.16);
 }
 
 .detail-body {
@@ -752,7 +834,9 @@ input:focus {
 
     .status-actions,
     .status-form,
-    .status-button {
+    .status-button,
+    .favorite-form,
+    .heart-button {
         width: 100%;
     }
 

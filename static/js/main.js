@@ -107,3 +107,44 @@ document.querySelectorAll(".remove-form").forEach((form) => {
         }
     });
 });
+
+document.querySelectorAll(".favorite-form").forEach((form) => {
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const button = form.querySelector(".heart-button");
+        if (!button) {
+            form.submit();
+            return;
+        }
+
+        button.disabled = true;
+
+        try {
+            const response = await fetch(form.action, {
+                method: "POST",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                body: new FormData(form),
+            });
+
+            if (!response.ok) {
+                throw new Error("Request failed");
+            }
+
+            const data = await response.json();
+            const label = button.querySelector(".heart-label");
+            button.classList.toggle("is-favorited", data.is_favorited);
+            if (label && data.label) {
+                label.textContent = data.label;
+                button.title = data.label;
+            }
+            showToast(data.message);
+        } catch (error) {
+            form.submit();
+        } finally {
+            button.disabled = false;
+        }
+    });
+});

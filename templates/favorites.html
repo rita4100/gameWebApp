@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Favorites | GameVault{% endblock %}
+
+{% block content %}
+<section class="page-heading content-shell">
+    <p class="eyebrow">Your collection</p>
+    <h1>Favorite Games</h1>
+    <p>Games you love the most.</p>
+</section>
+
+<section class="content-shell section">
+    {% if error %}
+        <div class="empty-state">{{ error }}</div>
+    {% endif %}
+
+    <section class="library-section">
+        <div class="section-title-row">
+            <h2>Favorites</h2>
+            <span>{{ favorite_games|length }} games</span>
+        </div>
+
+        {% if favorite_games %}
+            <div class="game-grid compact-grid">
+                {% for game in favorite_games %}
+                    {% set in_library = False %}
+                    {% include "partials/game_card.html" %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state small">No favorite games yet.</div>
+        {% endif %}
+    </section>
+</section>
+{% endblock %}

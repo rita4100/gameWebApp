@@ -98,6 +98,14 @@ def init_db():
                 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
                 UNIQUE (user_id, game_id)
             );
+
+            CREATE TABLE IF NOT EXISTS favorite_games (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                game_id INTEGER NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+                UNIQUE (user_id, game_id)
+            );
             """
         )
 
@@ -126,10 +134,19 @@ def rawg_get(path, params=None):
         return None, "Game data could not be loaded right now. Please try again later."
 
 
-def fetch_games(search_query=None, page=1):
+def fetch_genres():
+    data, error = rawg_get("/genres", {"page_size": 50})
+    if error:
+        return [], error
+    return data.get("results", []), None
+
+
+def fetch_games(search_query=None, genre_id=None, page=1):
     params = {"page_size": 18, "page": page}
     if search_query:
         params.update({"search": search_query, "ordering": "-rating"})
+    elif genre_id:
+        params.update({"genres": genre_id, "ordering": "-rating"})
     else:
         params.update({"ordering": "-added"})
 
@@ -154,6 +171,16 @@ def get_current_status(game_id):
     return row["status"] if row else None
 
 
+def get_is_favorited(game_id):
+    if not current_user.is_authenticated:
+        return False
+    row = get_db().execute(
+        "SELECT id FROM favorite_games WHERE user_id = ? AND game_id = ?",
+        (current_user.id, game_id),
+    ).fetchone()
+    return row is not None
+
+
 def is_safe_next(target):
     if not target:
         return False
@@ -169,12 +196,24 @@ def inject_status_labels():
 @app.route("/")
 def home():
     query = request.args.get("q", "").strip()
-    games, error = fetch_games(query, page=1)
-    page_title = "Search Results" if query else "Popular Games"
+    genre_id = request.args.get("genre", "").strip()
+    genres, _ = fetch_genres()
+    games, error = fetch_games(search_query=query, genre_id=genre_id or None, page=1)
+    
+    if query:
+        page_title = "Search Results"
+    elif genre_id:
+        genre_name = next((g["name"] for g in genres if str(g["id"]) == genre_id), "Games")
+        page_title = f"{genre_name}"
+    else:
+        page_title = "Popular Games"
+    
     return render_template(
         "index.html",
         games=games,
         query=query,
+        genre=genre_id,
+        genres=genres,
         error=error,
         page_title=page_title,
     )
@@ -183,8 +222,9 @@ def home():
 @app.route("/api/games/more", methods=["GET"])
 def load_more_games():
     query = request.args.get("q", "").strip()
+    genre_id = request.args.get("genre", "").strip()
     page = request.args.get("page", 1, type=int)
-    games, error = fetch_games(query, page=page)
+    games, error = fetch_games(search_query=query, genre_id=genre_id or None, page=page)
     
     if error:
         return jsonify({"ok": False, "error": error})
@@ -207,6 +247,7 @@ def game_detail(id):
         game=game,
         error=None,
         current_status=get_current_status(id),
+        is_favorited=get_is_favorited(id),
     )
 
 
@@ -236,6 +277,34 @@ def library():
 
     error = errors[0] if errors else None
     return render_template("library.html", library_games=library_games, error=error)
+
+
+@app.route("/favorites")
+@login_required
+def favorites():
+    rows = get_db().execute(
+        """
+        SELECT game_id
+        FROM favorite_games
+        WHERE user_id = ?
+        ORDER BY id DESC
+        """,
+        (current_user.id,),
+    ).fetchall()
+
+    favorite_games = []
+    errors = []
+
+    for row in rows:
+        game, error = fetch_game_details(row["game_id"])
+        if error:
+            errors.append(error)
+            continue
+        if game:
+            favorite_games.append(game)
+
+    error = errors[0] if errors else None
+    return render_template("favorites.html", favorite_games=favorite_games, error=error)
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -383,6 +452,55 @@ def remove_game(id):
     flash(message, "success")
     next_url = request.form.get("next") or request.args.get("next") or request.referrer
     return redirect(next_url if is_safe_next(next_url) else url_for("library"))
+
+
+@app.route("/toggle_favorite/<int:game_id>", methods=["POST"])
+@login_required
+def toggle_favorite(game_id):
+    db = get_db()
+
+    existing = db.execute(
+        "SELECT id FROM favorite_games WHERE user_id = ? AND game_id = ?",
+        (current_user.id, game_id),
+    ).fetchone()
+
+    if existing:
+        db.execute(
+            "DELETE FROM favorite_games WHERE user_id = ? AND game_id = ?",
+            (current_user.id, game_id),
+        )
+        is_favorited = False
+        message = "Removed from favorites."
+    else:
+        db.execute(
+            """
+            INSERT INTO favorite_games (user_id, game_id)
+            VALUES (?, ?)
+            ON CONFLICT(user_id, game_id)
+            DO NOTHING
+            """,
+            (current_user.id, game_id),
+        )
+        is_favorited = True
+        message = "Added to favorites."
+
+    db.commit()
+    label = "Remove from favorites" if is_favorited else "Add to favorites"
+
+    wants_json = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    if wants_json:
+        return jsonify(
+            {
+                "ok": True,
+                "message": message,
+                "is_favorited": is_favorited,
+                "label": label,
+            }
+        )
+
+    flash(message, "success")
+    next_url = request.form.get("next") or request.args.get("next") or request.referrer
+    return redirect(next_url if is_safe_next(next_url) else url_for("game_detail", id=game_id))
 
 
 init_db()
