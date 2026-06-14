@@ -39,6 +39,7 @@ STATUS_LABELS = {
 
 
 app = Flask(__name__)
+# Základní nastavení aplikace a bezpečnostního klíče.
 app.config["SECRET_KEY"] = os.environ.get(
     "SECRET_KEY", "change-this-secret-key-before-production"
 )
@@ -64,6 +65,7 @@ class User(UserMixin):
 
 
 def get_db():
+    # Připojení k SQLite databázi pro uživatele a jejich hry.
     if "db" not in g:
         g.db = sqlite3.connect(DATABASE)
         g.db.row_factory = sqlite3.Row
@@ -195,6 +197,7 @@ def inject_status_labels():
 
 @app.route("/")
 def home():
+    # Hlavní stránka s vyhledáváním a filtrováním her.
     query = request.args.get("q", "").strip()
     genre_id = request.args.get("genre", "").strip()
     genres, _ = fetch_genres()
@@ -254,6 +257,7 @@ def game_detail(id):
 @app.route("/library")
 @login_required
 def library():
+    # Zobrazení her z uživatelovy osobní knihovny.
     rows = get_db().execute(
         """
         SELECT game_id, status
@@ -282,6 +286,7 @@ def library():
 @app.route("/favorites")
 @login_required
 def favorites():
+    # Seznam oblíbených her pro přihlášeného uživatele.
     rows = get_db().execute(
         """
         SELECT game_id

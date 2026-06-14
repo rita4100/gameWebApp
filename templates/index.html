@@ -3,6 +3,7 @@
 {% block title %}{{ page_title }} | GameVault{% endblock %}
 
 {% block content %}
+<!-- Úvodní sekce s vyhledáváním a přehledem her. -->
 <section class="hero">
     <div class="content-shell hero-inner">
         <div class="hero-copy">
@@ -59,6 +60,7 @@
 </section>
 
 <script>
+// Načítání dalších her při scrollování dolů.
 let currentPage = 2;
 let isLoading = false;
 const query = "{{ query }}";

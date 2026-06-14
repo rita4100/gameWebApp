@@ -1,4 +1,5 @@
 :root {
+    /* Základní barevná paleta aplikace. */
     --bg: #080a0e;
     --surface: #121720;
     --surface-strong: #191f2a;
@@ -21,6 +22,7 @@ html {
 }
 
 body {
+    /* Hlavní vzhled stránky a tmavé pozadí. */
     min-height: 100vh;
     margin: 0;
     color: var(--text);
@@ -762,6 +764,7 @@ input:focus {
     font-size: 1rem;
 }
 
+/* Responzivní úpravy pro menší obrazovky. */
 @media (max-width: 840px) {
     .nav-toggle {
         display: block;

@@ -8,6 +8,7 @@
     <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
 </head>
 <body>
+    <!-- Hlavní navigace a společný layout celé aplikace. -->
     <header class="site-header">
         <nav class="nav-shell" aria-label="Main navigation">
             <a class="brand" href="{{ url_for('home') }}">
@@ -50,6 +51,7 @@
         {% block content %}{% endblock %}
     </main>
 
+    <!-- Krátké oznámení a toast zprávy pro uživatele. -->
     <div class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
